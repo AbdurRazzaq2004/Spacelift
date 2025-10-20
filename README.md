@@ -361,3 +361,6 @@ If you run into issues:
 This demo was created to show a complete working example of Spacelift orchestrating Terraform and Ansible together. It includes all the lessons learned from debugging various SSH key, permissions, and hook execution issues.
 
 Happy automating!
+
+Author
+Abdur Razzaq ( DevOps Engineer )
