@@ -1,7 +1,8 @@
 ---
 - name: Install and Configure Nginx
   hosts: all
-  become: yes
+  become: true
+
   pre_tasks:
     - name: Set SSH user for Ubuntu systems
       set_fact:
@@ -12,20 +13,32 @@
       set_fact:
         ansible_user: ec2-user
       when: ansible_os_family == "RedHat"
-  
+
   tasks:
-    - name: Install Nginx
-      ansible.builtin.yum:
+    - name: Ensure package manager cache is updated (Debian)
+      apt:
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Ensure package manager cache is updated (RedHat)
+      yum:
+        update_cache: yes
+      when: ansible_os_family == "RedHat"
+
+    - name: Install Nginx on RedHat family
+      yum:
         name: nginx
         state: present
       when: ansible_os_family == "RedHat"
-      
-    - name: install nginx
-      apt: name=nginx state=latest
+
+    - name: Install Nginx on Debian family
+      apt:
+        name: nginx
+        state: present
       when: ansible_os_family == "Debian"
 
     - name: Create index.html
-      ansible.builtin.copy:
+      copy:
         dest: /usr/share/nginx/html/index.html
         content: |
           <!DOCTYPE html>
@@ -38,7 +51,7 @@
         mode: '0644'
 
     - name: Ensure Nginx is running and enabled
-      ansible.builtin.service:
+      service:
         name: nginx
         state: started
-        enabled: yes
+        enabled: true

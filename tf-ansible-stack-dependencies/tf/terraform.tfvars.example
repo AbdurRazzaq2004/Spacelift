@@ -1,0 +1,5 @@
+public_key = "~/.ssh/id_rsa.pub"
+aws_region = "eu-west-1"
+instance_type = "t2.micro"
+instance_count = 2
+instances_prefix = "demo"

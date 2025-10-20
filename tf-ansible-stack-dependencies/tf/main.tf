@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "eu-west-1"
+  region = var.aws_region
 }
 
 data "aws_ami" "ubuntu" {
@@ -22,24 +22,31 @@ data "aws_ami" "ubuntu" {
   owners = ["099720109477"] #canonical
 }
 
-locals {
-  instances = {
-    instance1 = {
-      ami           = data.aws_ami.ubuntu.id
-      instance_type = "t2.micro"
-    }
-    instance2 = {
-      ami           = data.aws_ami.ubuntu.id
-      instance_type = "t2.micro"
-    }
-    instance3 = {
-      ami           = data.aws_ami.ubuntu.id
-      instance_type = "t2.micro"
-    }
-    instance4 = {
-      ami           = data.aws_ami.ubuntu.id
-      instance_type = "t2.micro"
-    }
+resource "aws_security_group" "ssh_http" {
+  name        = "allow_ssh_http"
+  description = "Allow SSH and HTTP"
+
+  ingress {
+    description = "SSH"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "HTTP"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -49,13 +56,15 @@ resource "aws_key_pair" "ssh_key" {
 }
 
 resource "aws_instance" "this" {
-  for_each                    = local.instances
-  ami                         = each.value.ami
-  instance_type               = each.value.instance_type
+  count                       = var.instance_count
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = var.instance_type
   key_name                    = aws_key_pair.ssh_key.key_name
   associate_public_ip_address = true
+  vpc_security_group_ids      = [aws_security_group.ssh_http.id]
 
   tags = {
-    Name = each.key
+    Name = "${var.instances_prefix}-${count.index + 1}"
   }
 }
+

@@ -1,13 +1,13 @@
 ---
-- name: Install htop
-  hosts: all
-  become: yes
+---
+- hosts: all
+  become: true
   tasks:
-    - name: Update apt cache
+    - name: Ensure apt cache is updated
       apt:
         update_cache: yes
 
-    - name: Install htop
+    - name: Install htop (idempotent)
       apt:
         name: htop
         state: present
